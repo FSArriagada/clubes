@@ -1,10 +1,17 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const { MONGODB_USR, MONGODB_PWD } =  require("./config.js");
 
 const uri =
   "mongodb+srv://" + MONGODB_USR + ":" + MONGODB_PWD + "@myapp.hyamuy0.mongodb.net/?retryWrites=true&w=majority&appName=MyApp";
 
-const client = new MongoClient(uri);
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
+  
 const database = client.db("db");
 const clubes = database.collection("clubes");
 
