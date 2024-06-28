@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Clubes</title>
+  <!-- Enlace a la hoja de estilos de Bootstrap -->
+  <link
+    rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+  />
+  <!-- Enlace a la hoja de estilos de Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  />
+  <link rel="stylesheet" href="/public/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="my-4">Clubes</h1>
+    <form action="http://localhost:3000/club" method="post" class="mb-4">
+      <fieldset class="border p-4">
+        <legend class="w-auto">Insertar club:</legend>
+        <div class="form-group">
+          <label for="nombre">Nombre:</label>
+          <input type="text" id="nombre" name="nombre" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label for="titulos">Titulos:</label>
+          <input type="number" id="titulos" name="titulos" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="botonInsertarClub">Insertar</button>
+      </fieldset>
+    </form>
+    <fieldset class="border p-4">
+      <legend class="w-auto">Tabla de clubes:</legend>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Titulos</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="clubes-table-body">
+          <% for(i = 0; i < clubes.length; i++) { %>
+          <tr id="row-<%= clubes[i].nombre %>">
+            <td><%= clubes[i].nombre %></td>
+            <td><%= clubes[i].titulos %></td>
+            <td>
+              <button class="btn btn-danger" onclick="borrar('<%= clubes[i].nombre %>')">X</button>
+              <button class="btn btn-warning" onclick="mostrarEditarModal('<%= clubes[i].nombre %>', '<%= clubes[i].titulos %>')">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+            </td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </fieldset>
+  </div>
+
+  <!-- Modal para editar club -->
+  <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-labelledby="editarModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editarModalLabel">Editar Club</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="editarForm">
+            <div class="form-group">
+              <label for="editNombre">Nombre:</label>
+              <input type="text" id="editNombre" name="nombre" class="form-control" required />
+            </div>
+            <div class="form-group">
+              <label for="editTitulos">Titulos:</label>
+              <input type="number" id="editTitulos" name="titulos" class="form-control" required />
+            </div>
+            <button type="button" class="btn btn-primary" onclick="actualizar()">Guardar cambios</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function borrar(nombre) {
+      fetch("http://localhost:3000/club", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nombre: nombre })
+      }).then(response => {
+        if (response.ok) {
+          document.getElementById('row-' + nombre).remove();
+        }
+      });
+    }
+
+    function mostrarEditarModal(nombre, titulos) {
+      const editNombreInput = document.getElementById('editNombre');
+      editNombreInput.value = nombre;
+      editNombreInput.setAttribute('data-original-nombre', nombre);
+      document.getElementById('editTitulos').value = titulos;
+      $('#editarModal').modal('show');
+    }
+
+    function cerrarModal(){
+      $('#editarModal').modal('hide');
+    }
+
+    function actualizar() {
+      const editNombreInput = document.getElementById('editNombre');
+      const nombreActual = editNombreInput.getAttribute('data-original-nombre');
+      const nombreNuevo = editNombreInput.value;
+      const titulos = document.getElementById('editTitulos').value;
+
+      fetch("http://localhost:3000/club", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nombreActual: nombreActual, nombreNuevo: nombreNuevo, titulos: titulos })
+      }).then(response => {
+        if (response.ok) {
+          cerrarModal();
+          // Actualizar la fila en la tabla
+          const row = document.getElementById(`row-${nombreActual}`);
+          row.id = `row-${nombreNuevo}`;
+          row.querySelector('td:nth-child(1)').innerText = nombreNuevo;
+          row.querySelector('td:nth-child(2)').innerText = titulos;
+        }
+      }).catch(error => {
+        console.error('Error:', error);
+      });
+    }
+  </script>
+  
+  <!-- Enlace a los scripts de Bootstrap y dependencias de JavaScript -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
