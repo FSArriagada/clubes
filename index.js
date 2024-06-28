@@ -42,4 +42,4 @@ app.put("/club", async (req, res) => {
 
 
 app.listen(3000);
-console.log("Servidor no porto 3000");
+console.log("Server iniciado en el puerto 3000");
